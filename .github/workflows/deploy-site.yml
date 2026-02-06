@@ -1,1 +1,22 @@
+name: Déploiement mini-site
 
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - site/**
+
+jobs:
+  deploy-site:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Déploiement du site sur les serveurs Web
+        run: |
+          for ip in ${{ secrets.WEB1_IP }} ${{ secrets.WEB2_IP }} ${{ secrets.WEB3_IP }}; do
+            echo "Déploiement vers $ip"
+            scp -o StrictHostKeyChecking=no -r site/* ubuntu@$ip:/var/www/html/
+            ssh -o StrictHostKeyChecking=no ubuntu@$ip 'sudo systemctl reload nginx'
+          done
